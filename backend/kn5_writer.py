@@ -40,41 +40,48 @@ class KN5Writer:
         self.f.write(struct.pack("<16f", *m))
 
 
-def write_kn5(model, path):
-    with open(path, "wb") as f:
-        w = KN5Writer(f)
+def write_kn5(model, path_or_file):
+    if hasattr(path_or_file, 'write'):
+        _write_to(model, path_or_file)
+        return
+    with open(path_or_file, "wb") as f:
+        _write_to(model, f)
 
-        w.write_bytes(KN5_MAGIC)
-        w.write_uint(model.version)
 
-        w.write_int(len(model.textures))
-        for tex in model.textures:
-            w.write_int(1)
-            w.write_string(tex.name)
-            w.write_uint(len(tex.data))
-            w.write_bytes(tex.data)
+def _write_to(model, f):
+    w = KN5Writer(f)
 
-        w.write_int(len(model.materials))
-        for mat in model.materials:
-            w.write_string(mat.name)
-            w.write_string(mat.shader)
-            w.write_byte(mat.blend_mode)
-            w.write_bool(mat.alpha_tested)
-            w.write_int(mat.depth_mode)
-            w.write_uint(len(mat.properties))
-            for prop in mat.properties:
-                w.write_string(prop.name)
-                w.write_float(prop.value_a)
-                w.write_bytes(struct.pack("<2f", *prop.value_b))
-                w.write_bytes(struct.pack("<3f", *prop.value_c))
-                w.write_bytes(struct.pack("<4f", *prop.value_d))
-            w.write_uint(len(mat.texture_mappings))
-            for tm in mat.texture_mappings:
-                w.write_string(tm.mapping_name)
-                w.write_uint(tm.slot)
-                w.write_string(tm.texture_name)
+    w.write_bytes(KN5_MAGIC)
+    w.write_uint(model.version)
 
-        _write_node(w, model.root_node)
+    w.write_int(len(model.textures))
+    for tex in model.textures:
+        w.write_int(1)
+        w.write_string(tex.name)
+        w.write_uint(len(tex.data))
+        w.write_bytes(tex.data)
+
+    w.write_int(len(model.materials))
+    for mat in model.materials:
+        w.write_string(mat.name)
+        w.write_string(mat.shader)
+        w.write_byte(mat.blend_mode)
+        w.write_bool(mat.alpha_tested)
+        w.write_int(mat.depth_mode)
+        w.write_uint(len(mat.properties))
+        for prop in mat.properties:
+            w.write_string(prop.name)
+            w.write_float(prop.value_a)
+            w.write_bytes(struct.pack("<2f", *prop.value_b))
+            w.write_bytes(struct.pack("<3f", *prop.value_c))
+            w.write_bytes(struct.pack("<4f", *prop.value_d))
+        w.write_uint(len(mat.texture_mappings))
+        for tm in mat.texture_mappings:
+            w.write_string(tm.mapping_name)
+            w.write_uint(tm.slot)
+            w.write_string(tm.texture_name)
+
+    _write_node(w, model.root_node)
 
 
 def _write_node(w, node):

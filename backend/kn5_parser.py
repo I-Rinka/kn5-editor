@@ -177,20 +177,26 @@ class KN5Reader:
         return node
 
 
-def parse_kn5(path):
-    with open(path, "rb") as f:
-        reader = KN5Reader(f)
-        version = reader.read_header()
-        textures = reader.read_textures()
-        materials = reader.read_materials()
-        root_node = reader.read_node()
+def parse_kn5(source, source_path=''):
+    if isinstance(source, (str, bytes)) and not hasattr(source, 'read'):
+        with open(source, "rb") as f:
+            return _parse_from_file(f, source)
+    return _parse_from_file(source, source_path)
+
+
+def _parse_from_file(f, source_path):
+    reader = KN5Reader(f)
+    version = reader.read_header()
+    textures = reader.read_textures()
+    materials = reader.read_materials()
+    root_node = reader.read_node()
 
     model = KN5File(
         version=version,
         textures=textures,
         materials=materials,
         root_node=root_node,
-        source_path=path,
+        source_path=str(source_path),
     )
 
     node_index = {}

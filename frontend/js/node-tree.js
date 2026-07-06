@@ -1,4 +1,6 @@
-export function buildNodeTree(container, rootNodeData, onNodeSelect) {
+import * as THREE from 'three';
+
+export function buildNodeTree(container, rootNodeData, onNodeSelect, onNodeToggleSelect) {
     container.innerHTML = '';
 
     function createTreeItem(nodeData, depth) {
@@ -47,11 +49,11 @@ export function buildNodeTree(container, rootNodeData, onNodeSelect) {
 
         item.addEventListener('click', (e) => {
             e.stopPropagation();
-            container.querySelectorAll('.tree-item.selected').forEach(
-                el => el.classList.remove('selected')
-            );
-            item.classList.add('selected');
-            onNodeSelect(nodeData.node_id);
+            if ((e.shiftKey || e.ctrlKey || e.metaKey) && onNodeToggleSelect) {
+                onNodeToggleSelect(nodeData.node_id);
+            } else {
+                onNodeSelect(nodeData.node_id);
+            }
         });
 
         return wrapper;
@@ -60,44 +62,82 @@ export function buildNodeTree(container, rootNodeData, onNodeSelect) {
     container.appendChild(createTreeItem(rootNodeData, 0));
 }
 
-export function highlightTreeNode(container, nodeId) {
-    container.querySelectorAll('.tree-item.selected').forEach(
-        el => el.classList.remove('selected')
-    );
-    const item = container.querySelector(`[data-node-id="${nodeId}"]`);
-    if (item) {
-        item.classList.add('selected');
-        item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+export function highlightTreeNodes(container, selectedIds, primaryId) {
+    container.querySelectorAll('.tree-item.selected, .tree-item.multi-selected').forEach(el => {
+        el.classList.remove('selected', 'multi-selected');
+    });
+    for (const id of selectedIds) {
+        const item = container.querySelector(`[data-node-id="${id}"]`);
+        if (item) item.classList.add(id === primaryId ? 'selected' : 'multi-selected');
+    }
+    if (primaryId !== null && primaryId !== undefined) {
+        const primary = container.querySelector(`[data-node-id="${primaryId}"]`);
+        if (primary) primary.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 }
 
-export function updateProperties(propContent, nodeData, nodeMap) {
-    if (!nodeData) {
+export function updateProperties(propContent, nodeId, nodeMap, onPositionChange, onOriginAction) {
+    if (!nodeId) {
         propContent.innerHTML = 'Select a node';
         return;
     }
 
-    const obj = nodeMap ? nodeMap.get(nodeData) : null;
-    let html = '';
-
-    if (obj) {
-        html += `<div class="prop-row"><span class="prop-label">Name</span><span class="prop-value">${obj.name}</span></div>`;
-        html += `<div class="prop-row"><span class="prop-label">Type</span><span class="prop-value">${obj.userData.nodeType}</span></div>`;
-
-        const pos = obj.position || { x: 0, y: 0, z: 0 };
-        html += `<div class="prop-row"><span class="prop-label">Position</span><span class="prop-value">${pos.x.toFixed(3)}, ${pos.y.toFixed(3)}, ${pos.z.toFixed(3)}</span></div>`;
-
-        if (obj.userData.nodeType === 'mesh' && obj.geometry) {
-            const vc = obj.geometry.attributes.position ? obj.geometry.attributes.position.count : 0;
-            const ic = obj.geometry.index ? obj.geometry.index.count : 0;
-            html += `<div class="prop-row"><span class="prop-label">Vertices</span><span class="prop-value">${vc}</span></div>`;
-            html += `<div class="prop-row"><span class="prop-label">Triangles</span><span class="prop-value">${Math.floor(ic / 3)}</span></div>`;
-        }
-
-        if (obj.userData.materialId !== undefined) {
-            html += `<div class="prop-row"><span class="prop-label">Material</span><span class="prop-value">#${obj.userData.materialId}</span></div>`;
-        }
+    const obj = nodeMap ? nodeMap.get(nodeId) : null;
+    if (!obj) {
+        propContent.innerHTML = 'Select a node';
+        return;
     }
 
-    propContent.innerHTML = html || 'Select a node';
+    let html = '';
+    html += `<div class="prop-row"><span class="prop-label">Name</span><span class="prop-value">${obj.name}</span></div>`;
+    html += `<div class="prop-row"><span class="prop-label">Type</span><span class="prop-value">${obj.userData.nodeType}</span></div>`;
+
+    const pos = obj.position;
+    html += `<div class="prop-row prop-position">
+        <span class="prop-label">Position</span>
+        <span class="prop-value prop-pos-inputs">
+            <label class="pos-label">X<input type="number" class="pos-input" data-axis="x" value="${pos.x.toFixed(4)}" step="0.001"></label>
+            <label class="pos-label">Y<input type="number" class="pos-input" data-axis="y" value="${pos.y.toFixed(4)}" step="0.001"></label>
+            <label class="pos-label">Z<input type="number" class="pos-input" data-axis="z" value="${pos.z.toFixed(4)}" step="0.001"></label>
+        </span>
+    </div>`;
+
+    if (obj.userData.nodeType === 'mesh' && obj.geometry) {
+        const geo = obj.geometry;
+        geo.computeBoundingBox();
+        const geoCenter = new THREE.Vector3();
+        geo.boundingBox.getCenter(geoCenter);
+        html += `<div class="prop-row"><span class="prop-label">Geo Center</span><span class="prop-value">${geoCenter.x.toFixed(3)}, ${geoCenter.y.toFixed(3)}, ${geoCenter.z.toFixed(3)}</span></div>`;
+        html += `<div class="prop-origin-btns">
+            <button class="origin-btn" data-action="origin-to-geo">Origin to Geometry</button>
+            <button class="origin-btn" data-action="geo-to-origin">Geometry to Origin</button>
+        </div>`;
+        const vc = geo.attributes.position ? geo.attributes.position.count : 0;
+        const ic = geo.index ? geo.index.count : 0;
+        html += `<div class="prop-row"><span class="prop-label">Vertices</span><span class="prop-value">${vc}</span></div>`;
+        html += `<div class="prop-row"><span class="prop-label">Triangles</span><span class="prop-value">${Math.floor(ic / 3)}</span></div>`;
+    }
+
+    if (obj.userData.materialId !== undefined) {
+        html += `<div class="prop-row"><span class="prop-label">Material</span><span class="prop-value">#${obj.userData.materialId}</span></div>`;
+    }
+
+    propContent.innerHTML = html;
+
+    if (onPositionChange) {
+        propContent.querySelectorAll('.pos-input').forEach(input => {
+            input.addEventListener('change', () => {
+                const axis = input.dataset.axis;
+                const value = parseFloat(input.value);
+                if (!isNaN(value)) onPositionChange(axis, value);
+            });
+            input.addEventListener('keydown', (e) => e.stopPropagation());
+        });
+    }
+
+    if (onOriginAction) {
+        propContent.querySelectorAll('.origin-btn').forEach(btn => {
+            btn.addEventListener('click', () => onOriginAction(btn.dataset.action));
+        });
+    }
 }

@@ -4,10 +4,7 @@ from backend.app import create_app
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python run.py <path-to-kn5-file>")
-        sys.exit(1)
-    kn5_path = sys.argv[1]
+    kn5_path = sys.argv[1] if len(sys.argv) > 1 else None
     app = create_app(kn5_path)
     print(f"KN5 Editor: http://localhost:5000")
     webbrowser.open("http://localhost:5000")

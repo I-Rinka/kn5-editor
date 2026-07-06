@@ -16,20 +16,24 @@
 </head>
 <body>
   <div id="toolbar">
-    <button id="btn-translate" class="tool-btn active" title="Translate (G)">Move</button>
-    <button id="btn-rotate" class="tool-btn" title="Rotate (R)">Rotate</button>
-    <button id="btn-scale" class="tool-btn" title="Scale (S)">Scale</button>
+    <button id="btn-translate" class="tool-btn active" disabled title="Translate (G)">Move</button>
+    <button id="btn-rotate" class="tool-btn" disabled title="Rotate (R)">Rotate</button>
+    <button id="btn-scale" class="tool-btn" disabled title="Scale (S)">Scale</button>
     <span class="separator"></span>
-    <button id="btn-focus" class="tool-btn" title="Focus selected (F)">Focus</button>
+    <button id="btn-focus" class="tool-btn" disabled title="Focus selected (F)">Focus</button>
     <span class="separator"></span>
-    <button id="btn-wheel-spin" class="tool-btn" title="Toggle wheel spin (W)">Wheel Spin</button>
-    <input type="range" id="wheel-speed" min="0" max="20" step="0.5" value="5" title="Wheel speed" style="width:80px">
+    <button id="btn-undo" class="tool-btn" disabled title="Undo (Ctrl+Z)">Undo</button>
+    <button id="btn-redo" class="tool-btn" disabled title="Redo (Ctrl+Y)">Redo</button>
+    <button id="btn-reset" class="tool-btn reset-btn" disabled title="Reset all transforms">Reset</button>
+    <span class="separator"></span>
+    <button id="btn-wheel-spin" class="tool-btn" disabled title="Toggle wheel spin (W)">Wheel Spin</button>
+    <input type="range" id="wheel-speed" min="0" max="20" step="0.5" value="5" disabled title="Wheel speed" style="width:80px">
     <span class="separator"></span>
     <label class="wheel-ctrl">Steer</label>
-    <input type="range" id="steer-angle" min="-450" max="450" step="5" value="0" title="Steering angle" style="width:100px">
+    <input type="range" id="steer-angle" min="-450" max="450" step="5" value="0" disabled title="Steering angle" style="width:100px">
     <span id="steer-label" style="font-size:12px;min-width:30px">0</span>
     <span class="separator"></span>
-    <button id="btn-save" class="tool-btn save-btn">Save KN5</button>
+    <button id="btn-download" class="tool-btn save-btn" disabled>Download KN5</button>
     <span id="status-text"></span>
   </div>
 
@@ -39,17 +43,17 @@
       <div id="node-tree"></div>
       <div id="properties-panel">
         <div id="prop-title">Properties</div>
-        <div id="prop-content">Select a node</div>
+        <div id="prop-content">Upload a KN5 file to begin</div>
       </div>
       <div id="nudge-panel">
         <div class="nudge-title">Nudge Position (Arrow keys / Shift=fast)</div>
         <div class="nudge-grid">
-          <button class="nudge-btn" data-axis="x" data-dir="-1">X-</button>
-          <button class="nudge-btn" data-axis="y" data-dir="+1">Y+</button>
-          <button class="nudge-btn" data-axis="x" data-dir="+1">X+</button>
-          <button class="nudge-btn" data-axis="y" data-dir="-1">Y-</button>
-          <button class="nudge-btn" data-axis="z" data-dir="-1">Z-</button>
-          <button class="nudge-btn" data-axis="z" data-dir="+1">Z+</button>
+          <button class="nudge-btn" data-axis="x" data-dir="-1" disabled>X-</button>
+          <button class="nudge-btn" data-axis="y" data-dir="+1" disabled>Y+</button>
+          <button class="nudge-btn" data-axis="x" data-dir="+1" disabled>X+</button>
+          <button class="nudge-btn" data-axis="y" data-dir="-1" disabled>Y-</button>
+          <button class="nudge-btn" data-axis="z" data-dir="-1" disabled>Z-</button>
+          <button class="nudge-btn" data-axis="z" data-dir="+1" disabled>Z+</button>
         </div>
       </div>
     </div>
@@ -58,9 +62,22 @@
     </div>
   </div>
 
-  <div id="loading-overlay">
+  <div id="upload-overlay">
+    <div id="upload-zone">
+      <div class="upload-icon">+</div>
+      <div class="upload-title">KN5 Editor</div>
+      <div class="upload-hint">Drag & drop a .kn5 file here</div>
+      <div class="upload-or">or</div>
+      <label class="upload-btn">
+        Choose File
+        <input type="file" id="file-input" accept=".kn5" hidden>
+      </label>
+    </div>
+  </div>
+
+  <div id="loading-overlay" class="hidden">
     <div class="spinner"></div>
-    <div id="loading-text">Loading KN5...</div>
+    <div id="loading-text">Loading...</div>
   </div>
 
   <script type="module" src="js/main.js"></script>
