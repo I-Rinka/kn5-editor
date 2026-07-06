@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KN5 Editor</title>
+<link rel="stylesheet" href="css/style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+  <div id="toolbar">
+    <button id="btn-translate" class="tool-btn active" title="Translate (G)">Move</button>
+    <button id="btn-rotate" class="tool-btn" title="Rotate (R)">Rotate</button>
+    <button id="btn-scale" class="tool-btn" title="Scale (S)">Scale</button>
+    <span class="separator"></span>
+    <button id="btn-focus" class="tool-btn" title="Focus selected (F)">Focus</button>
+    <span class="separator"></span>
+    <button id="btn-wheel-spin" class="tool-btn" title="Toggle wheel spin (W)">Wheel Spin</button>
+    <input type="range" id="wheel-speed" min="0" max="20" step="0.5" value="5" title="Wheel speed" style="width:80px">
+    <span class="separator"></span>
+    <label class="wheel-ctrl">Steer</label>
+    <input type="range" id="steer-angle" min="-450" max="450" step="5" value="0" title="Steering angle" style="width:100px">
+    <span id="steer-label" style="font-size:12px;min-width:30px">0</span>
+    <span class="separator"></span>
+    <button id="btn-save" class="tool-btn save-btn">Save KN5</button>
+    <span id="status-text"></span>
+  </div>
+
+  <div id="main">
+    <div id="sidebar">
+      <div id="sidebar-header">Node Tree</div>
+      <div id="node-tree"></div>
+      <div id="properties-panel">
+        <div id="prop-title">Properties</div>
+        <div id="prop-content">Select a node</div>
+      </div>
+      <div id="nudge-panel">
+        <div class="nudge-title">Nudge Position (Arrow keys / Shift=fast)</div>
+        <div class="nudge-grid">
+          <button class="nudge-btn" data-axis="x" data-dir="-1">X-</button>
+          <button class="nudge-btn" data-axis="y" data-dir="+1">Y+</button>
+          <button class="nudge-btn" data-axis="x" data-dir="+1">X+</button>
+          <button class="nudge-btn" data-axis="y" data-dir="-1">Y-</button>
+          <button class="nudge-btn" data-axis="z" data-dir="-1">Z-</button>
+          <button class="nudge-btn" data-axis="z" data-dir="+1">Z+</button>
+        </div>
+      </div>
+    </div>
+    <div id="viewport">
+      <canvas id="canvas3d"></canvas>
+    </div>
+  </div>
+
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <div id="loading-text">Loading KN5...</div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
